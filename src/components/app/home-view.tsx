@@ -90,7 +90,7 @@ export function HomeView({
                 {locale === "ms" ? "Tingkatan 4 & 5" : "Form 4 & 5"}
               </Badge>
               <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">
-                {t("home.welcome")} <span className="gradient-text">{t("app.title")}</span>
+                {t("home.welcome")} <span className="xgradient-text">{t("app.title")}</span>
               </h1>
               <p className="mt-2 text-sm text-muted-foreground sm:text-base">{t("app.tagline")}</p>
               <div className="mt-4 flex flex-wrap gap-2">
