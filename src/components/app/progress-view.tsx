@@ -5,8 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Award, Target, TrendingUp } from "lucide-react";
-import { LessonIcon } from "./icon";
+import { Award, Target, TrendingUp, Trophy } from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -16,36 +15,48 @@ import {
   CartesianGrid,
   Tooltip,
   Cell,
+  AreaChart,
+  Area,
 } from "recharts";
+import { TopicIcon } from "./icon";
 
 type Dashboard = {
   stats: {
-    totalLessons: number;
-    completedLessons: number;
+    totalSubjects: number;
+    totalTopics: number;
     totalAttempts: number;
     correctAttempts: number;
     totalPoints: number;
     accuracy: number;
-    overallCompletion: number;
   };
-  byLesson: {
+  byTopic: {
     id: string;
     slug: string;
     titleEn: string;
     titleMs: string;
     icon: string;
-    order: number;
-    status: string;
-    completionPct: number;
+    subjectSlug: string;
+    subjectNameEn: string;
+    subjectNameMs: string;
+    subjectColor: string;
     quizCount: number;
     attempts: number;
     accuracy: number;
   }[];
+  bySubject: {
+    slug: string;
+    nameEn: string;
+    nameMs: string;
+    color: string;
+    attempts: number;
+    correct: number;
+    accuracy: number;
+  }[];
   byDifficulty: { difficulty: string; total: number; correct: number }[];
-  scoreTrend: { idx: number; correct: number; points: number }[];
+  scoreTrend: { idx: number; correct: number; points: number; rate: number }[];
 };
 
-export function ProgressView({ onOpenLesson }: { onOpenLesson: (slug: string) => void }) {
+export function ProgressView({ onOpenTopic }: { onOpenTopic: (subjectSlug: string, topicSlug: string) => void }) {
   const { t, locale } = useI18n();
 
   const { data, isLoading } = useQuery<Dashboard>({
@@ -66,7 +77,6 @@ export function ProgressView({ onOpenLesson }: { onOpenLesson: (slug: string) =>
 
   const { stats } = data;
 
-  // Difficulty bar chart
   const diffData = data.byDifficulty.map((d) => ({
     name: d.difficulty.charAt(0).toUpperCase() + d.difficulty.slice(1),
     total: d.total,
@@ -83,102 +93,73 @@ export function ProgressView({ onOpenLesson }: { onOpenLesson: (slug: string) =>
 
       {/* Top stats */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={Award}
-          label={t("progress.totalPoints")}
-          value={String(stats.totalPoints)}
-          tone="amber"
-        />
-        <StatCard
-          icon={Target}
-          label={t("progress.accuracy")}
-          value={`${stats.accuracy}%`}
-          tone="emerald"
-        />
-        <StatCard
-          icon={TrendingUp}
-          label={t("dash.lessonsCompleted")}
-          value={`${stats.completedLessons}/${stats.totalLessons}`}
-          tone="primary"
-        />
-        <StatCard
-          icon={Award}
-          label={t("dash.quizzesTaken")}
-          value={String(stats.totalAttempts)}
-          tone="rose"
-        />
+        <StatCard icon={Award} label={t("progress.totalPoints")} value={String(stats.totalPoints)} tone="amber" />
+        <StatCard icon={Target} label={t("progress.accuracy")} value={`${stats.accuracy}%`} tone="emerald" />
+        <StatCard icon={TrendingUp} label={t("progress.attempts")} value={String(stats.totalAttempts)} tone="primary" />
+        <StatCard icon={Trophy} label={t("home.stat.topics")} value={`${stats.totalTopics}`} tone="rose" />
       </div>
 
-      {/* Per-module progress */}
+      {/* By subject */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t("progress.byModule")}</CardTitle>
-          <CardDescription className="text-xs">
-            {locale === "ms"
-              ? "Klik modul untuk membuka pelajaran"
-              : "Click a module to open the lesson"}
-          </CardDescription>
+          <CardTitle className="text-base">{t("progress.bySubject")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {data.byLesson.map((l) => (
-              <button
-                key={l.id}
-                onClick={() => onOpenLesson(l.slug)}
-                className="focus-ring w-full rounded-lg border border-border p-3 text-left transition-colors hover:border-primary/40 hover:bg-muted/40"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                      <LessonIcon name={l.icon} className="h-4 w-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-medium">
-                        {locale === "ms" ? l.titleMs : l.titleEn}
-                      </div>
-                      <div className="text-[0.7rem] text-muted-foreground">
-                        {l.attempts} {locale === "ms" ? "percubaan" : "attempts"}
-                        {l.attempts > 0 && ` · ${l.accuracy}% ${locale === "ms" ? "tepat" : "accurate"}`}
-                      </div>
-                    </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {data.bySubject.map((s) => (
+              <div key={s.slug} className="rounded-lg border border-border p-3">
+                <div className="flex items-center justify-between">
+                  <div className="font-medium">
+                    {locale === "ms" ? s.nameMs : s.nameEn}
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    {l.status === "completed" && (
-                      <Badge className="bg-emerald-600 text-[0.65rem] hover:bg-emerald-600">
-                        {t("lessons.completed")}
-                      </Badge>
-                    )}
-                    <span className="font-mono text-xs text-muted-foreground">{l.completionPct}%</span>
-                  </div>
+                  <Badge
+                    variant="outline"
+                    className={
+                      s.color === "emerald"
+                        ? "border-emerald-500/50 text-emerald-700 dark:text-emerald-400"
+                        : "border-amber-500/50 text-amber-700 dark:text-amber-400"
+                    }
+                  >
+                    {s.accuracy}%
+                  </Badge>
                 </div>
-                <Progress value={l.completionPct} className="mt-2 h-1" />
-              </button>
+                <div className="mt-2 text-xs text-muted-foreground">
+                  {s.correct}/{s.attempts} {t("progress.attempts")}
+                </div>
+                <Progress value={s.accuracy} className="mt-2 h-1" />
+              </div>
             ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Difficulty chart */}
+      {/* Score trend */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t("progress.attemptsByDifficulty")}</CardTitle>
+          <CardTitle className="text-base">{t("progress.scoreTrend")}</CardTitle>
           <CardDescription className="text-xs">
             {locale === "ms"
-              ? "Bilangan soalan dijawab mengikut tahap kesukaran"
-              : "Number of questions answered by difficulty level"}
+              ? "Kadar ketepatan kumulatif (15 soalan terkini)"
+              : "Cumulative accuracy rate (last 15 questions)"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {diffData.every((d) => d.total === 0) ? (
+          {data.scoreTrend.length === 0 ? (
             <div className="grid h-48 place-items-center text-sm text-muted-foreground">
               {t("progress.noData")}
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={diffData}>
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={data.scoreTrend}>
+                <defs>
+                  <linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-                <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
+                <XAxis dataKey="idx" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
                 <Tooltip
                   contentStyle={{
                     background: "var(--popover)",
@@ -187,43 +168,118 @@ export function ProgressView({ onOpenLesson }: { onOpenLesson: (slug: string) =>
                     fontSize: 12,
                   }}
                 />
-                <Bar dataKey="total" name={locale === "ms" ? "Jumlah" : "Total"} radius={[4, 4, 0, 0]}>
-                  {diffData.map((d, i) => (
-                    <Cell
-                      key={i}
-                      fill={
-                        d.name === "Beginner"
-                          ? "var(--chart-1)"
-                          : d.name === "Intermediate"
-                          ? "var(--chart-2)"
-                          : "var(--chart-3)"
-                      }
-                    />
-                  ))}
-                </Bar>
-                <Bar dataKey="correct" name={locale === "ms" ? "Betul" : "Correct"} fill="var(--primary)" radius={[4, 4, 0, 0]} />
-              </BarChart>
+                <Area type="monotone" dataKey="rate" stroke="var(--primary)" strokeWidth={2} fill="url(#trendFill)" />
+              </AreaChart>
             </ResponsiveContainer>
           )}
-          <div className="mt-3 flex flex-wrap gap-3 text-xs">
-            {diffData.map((d) => (
-              <div key={d.name} className="flex items-center gap-1">
-                <span
-                  className="h-2.5 w-2.5 rounded-full"
-                  style={{
-                    background:
-                      d.name === "Beginner"
-                        ? "var(--chart-1)"
-                        : d.name === "Intermediate"
-                        ? "var(--chart-2)"
-                        : "var(--chart-3)",
-                  }}
-                />
-                <span className="text-muted-foreground">{d.name}:</span>
-                <span className="font-mono">
-                  {d.correct}/{d.total} ({d.rate}%)
-                </span>
+        </CardContent>
+      </Card>
+
+      {/* By difficulty */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("progress.byDifficulty")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {diffData.every((d) => d.total === 0) ? (
+            <div className="grid h-32 place-items-center text-sm text-muted-foreground">
+              {t("progress.noData")}
+            </div>
+          ) : (
+            <>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={diffData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
+                  <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "var(--popover)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 8,
+                      fontSize: 12,
+                    }}
+                  />
+                  <Bar dataKey="total" name={locale === "ms" ? "Jumlah" : "Total"} radius={[4, 4, 0, 0]}>
+                    {diffData.map((d, i) => (
+                      <Cell
+                        key={i}
+                        fill={
+                          d.name === "Beginner"
+                            ? "var(--chart-1)"
+                            : d.name === "Intermediate"
+                            ? "var(--chart-2)"
+                            : "var(--chart-3)"
+                        }
+                      />
+                    ))}
+                  </Bar>
+                  <Bar dataKey="correct" name={locale === "ms" ? "Betul" : "Correct"} fill="var(--primary)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+              <div className="mt-3 flex flex-wrap gap-3 text-xs">
+                {diffData.map((d) => (
+                  <div key={d.name} className="flex items-center gap-1">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{
+                        background:
+                          d.name === "Beginner"
+                            ? "var(--chart-1)"
+                            : d.name === "Intermediate"
+                            ? "var(--chart-2)"
+                            : "var(--chart-3)",
+                      }}
+                    />
+                    <span className="text-muted-foreground">{d.name}:</span>
+                    <span className="font-mono">{d.correct}/{d.total} ({d.rate}%)</span>
+                  </div>
+                ))}
               </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* By topic */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("progress.byTopic")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {data.byTopic.map((topic) => (
+              <button
+                key={topic.id}
+                onClick={() => onOpenTopic(topic.subjectSlug, topic.slug)}
+                className="focus-ring w-full rounded-lg border border-border p-3 text-left transition-colors hover:border-primary/40 hover:bg-muted/40"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <div className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                      <TopicIcon name={topic.icon} className="h-3.5 w-3.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium">
+                        {locale === "ms" ? topic.titleMs : topic.titleEn}
+                      </div>
+                      <div className="text-[0.7rem] text-muted-foreground">
+                        {locale === "ms" ? topic.subjectNameMs : topic.subjectNameEn}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2 text-xs">
+                    {topic.attempts > 0 && (
+                      <Badge variant="outline" className="font-mono">
+                        {topic.accuracy}%
+                      </Badge>
+                    )}
+                    <span className="text-muted-foreground">
+                      {topic.attempts} {t("progress.attempts")}
+                    </span>
+                  </div>
+                </div>
+              </button>
             ))}
           </div>
         </CardContent>
@@ -232,17 +288,7 @@ export function ProgressView({ onOpenLesson }: { onOpenLesson: (slug: string) =>
   );
 }
 
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: typeof Award;
-  label: string;
-  value: string;
-  tone: "primary" | "emerald" | "amber" | "rose";
-}) {
+function StatCard({ icon: Icon, label, value, tone }: { icon: typeof Award; label: string; value: string; tone: "primary" | "emerald" | "amber" | "rose" }) {
   const tones = {
     primary: "bg-primary/10 text-primary",
     emerald: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",

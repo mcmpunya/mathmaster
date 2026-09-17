@@ -1,23 +1,24 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
-// GET /api/quiz?lessonId=...&count=N
-// If lessonId is provided, return that lesson's questions.
-// Otherwise, return a randomised mixed quiz.
+// GET /api/quiz?topicId=...&count=10
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const lessonId = searchParams.get("lessonId");
+  const topicId = searchParams.get("topicId");
   const count = parseInt(searchParams.get("count") ?? "10", 10);
 
   let questions;
-  if (lessonId) {
+  if (topicId) {
     questions = await db.quizQuestion.findMany({
-      where: { lessonId },
+      where: { topicId },
       orderBy: { createdAt: "asc" },
+      include: { topic: { include: { subject: true } } },
     });
   } else {
-    const all = await db.quizQuestion.findMany({ orderBy: { createdAt: "asc" } });
-    // Fisher–Yates shuffle
+    const all = await db.quizQuestion.findMany({
+      orderBy: { createdAt: "asc" },
+      include: { topic: { include: { subject: true } } },
+    });
     for (let i = all.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [all[i], all[j]] = [all[j], all[i]];

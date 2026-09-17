@@ -1,11 +1,6 @@
 // =====================================================================
-// Double-Entry Accounting Learning App — Prisma Schema
-// Designed for PostgreSQL (Neon / Cloud SQL / Supabase).
-// In the sandbox runtime we use SQLite so the app runs without an
-// external DB. To deploy on PostgreSQL:
-//   1. Change datasource.db.provider to "postgresql"
-//   2. Set DATABASE_URL to your Postgres connection string
-// The model definitions below are PostgreSQL-compatible (no SQLite-only types).
+// SPM Math Master — Prisma Schema
+// PostgreSQL-compatible (swap provider to "postgresql" for production)
 // =====================================================================
 
 generator client {
@@ -13,17 +8,13 @@ generator client {
 }
 
 datasource db {
-  // Runtime provider — switch to "postgresql" for production.
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-// ---- Students / Users -------------------------------------------------
-// NOTE: `id` accepts a Firebase Auth UID string when Firebase Auth is
-// enabled. In demo mode it falls back to "student-demo".
+// ---- Students ---------------------------------------------------------
 model Student {
-  id           String   @id // Firebase UID or "student-demo"
-  studentId    String?  // university matric no
+  id           String   @id
   displayName  String
   email        String?  @unique
   photoUrl     String?
@@ -32,63 +23,138 @@ model Student {
 
   quizAttempts    QuizAttempt[]
   lessonProgress  LessonProgress[]
-  practiceRecords PracticeRecord[]
 }
 
-// ---- Lessons ----------------------------------------------------------
-model Lesson {
+// ---- Subjects (Matematik / Matematik Tambahan) ------------------------
+model Subject {
   id          String   @id @default(cuid())
   slug        String   @unique
+  nameEn      String
+  nameMs      String
+  descEn      String
+  descMs      String
+  icon        String
+  color       String
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  topics      Topic[]
+}
+
+// ---- Topics -----------------------------------------------------------
+model Topic {
+  id          String   @id @default(cuid())
+  subjectId   String
+  slug        String
   order       Int      @default(0)
   titleEn     String
   titleMs     String
   summaryEn   String
   summaryMs   String
-  icon        String   // lucide icon name
-  durationMin Int      @default(10)
+  icon        String
+  formLevel   Int      @default(5)
+  durationMin Int      @default(15)
   createdAt   DateTime @default(now())
 
-  sections    LessonSection[]
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
   quizQuestions QuizQuestion[]
-  progress     LessonProgress[]
+  spmQuestions  SpmQuestion[]
+  formulas      Formula[]
+
+  @@unique([subjectId, slug])
+}
+
+// ---- Lessons ----------------------------------------------------------
+model Lesson {
+  id          String   @id @default(cuid())
+  topicId     String
+  order       Int      @default(0)
+  titleEn     String
+  titleMs     String
+  summaryEn   String
+  summaryMs   String
+  durationMin Int      @default(8)
+  createdAt   DateTime @default(now())
+
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  sections    LessonSection[]
+
+  @@unique([topicId, order])
 }
 
 model LessonSection {
   id        String @id @default(cuid())
   lessonId  String
   order     Int    @default(0)
-  type      String // "intro" | "concept" | "example" | "interactive" | "tip"
+  type      String
   titleEn   String
   titleMs   String
-  bodyEn    String // markdown-ish text
+  bodyEn    String
   bodyMs    String
-  // Optional structured payload for interactive blocks (JSON string)
   payload   String?
 
   lesson    Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 }
 
-// ---- Quizzes ----------------------------------------------------------
+// ---- Formulas ---------------------------------------------------------
+model Formula {
+  id          String   @id @default(cuid())
+  topicId     String
+  nameEn      String
+  nameMs      String
+  formulaLatex String
+  formulaDisplay String
+  descEn      String
+  descMs      String
+  exampleEn   String?
+  exampleMs   String?
+  createdAt   DateTime @default(now())
+
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+}
+
+// ---- Quiz Questions ---------------------------------------------------
 model QuizQuestion {
-  id         String @id @default(cuid())
-  lessonId   String?
-  // null lessonId = general / mixed quiz
-  type       String // "mcq" | "journal" | "classify"
+  id         String   @id @default(cuid())
+  topicId    String
+  type       String
   promptEn   String
   promptMs   String
-  optionsEn  String // JSON array of strings
+  optionsEn  String
   optionsMs  String
-  answerKey  String // index for mcq, JSON for others
+  answerKey  String
   explanationEn String
   explanationMs String
-  difficulty String @default("beginner") // beginner | intermediate | advanced
-  points     Int    @default(1)
+  difficulty String   @default("beginner")
+  points     Int      @default(1)
   createdAt  DateTime @default(now())
 
-  lesson     Lesson? @relation(fields: [lessonId], references: [id])
+  topic      Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
   attempts   QuizAttempt[]
 }
 
+// ---- SPM Past-Year Questions ------------------------------------------
+model SpmQuestion {
+  id            String   @id @default(cuid())
+  topicId       String
+  year          Int
+  paper         Int      @default(2)
+  questionNo    String
+  promptEn      String
+  promptMs      String
+  marksEn       String
+  marksMs       String
+  answerEn      String
+  answerMs      String
+  workingEn     String?
+  workingMs     String?
+  createdAt     DateTime @default(now())
+
+  topic         Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+}
+
+// ---- Quiz Attempts ----------------------------------------------------
 model QuizAttempt {
   id          String   @id @default(cuid())
   studentId   String
@@ -102,41 +168,18 @@ model QuizAttempt {
   question    QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
-// ---- Lesson progress --------------------------------------------------
+// ---- Lesson Progress --------------------------------------------------
 model LessonProgress {
   id           String   @id @default(cuid())
   studentId    String
+  topicId      String
   lessonId     String
-  status       String   @default("not_started") // not_started | in_progress | completed
-  completionPct Int     @default(0) // 0..100
+  status       String   @default("not_started")
+  completionPct Int     @default(0)
   lastSectionIdx Int    @default(0)
   updatedAt    DateTime @updatedAt
 
   student      Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  lesson       Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, lessonId])
-}
-
-// ---- Practice Lab records --------------------------------------------
-model PracticeRecord {
-  id          String   @id @default(cuid())
-  studentId   String
-  scenarioId  String   // identifier of the practice scenario
-  entriesJson String   // JSON of journal entries student built
-  isBalanced  Boolean
-  createdAt   DateTime @default(now())
-
-  student     Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-}
-
-// ---- Chart of Accounts (reference data) ------------------------------
-model Account {
-  id        String @id @default(cuid())
-  code      String @unique // 1000, 1100, etc.
-  nameEn    String
-  nameMs    String
-  category  String // asset | liability | equity | revenue | expense
-  normalBalance String // debit | credit
-  isContra  Boolean @default(false)
 }

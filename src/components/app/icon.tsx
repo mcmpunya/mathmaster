@@ -1,30 +1,37 @@
 "use client";
 
 import {
-  Scale,
+  Calculator,
+  FunctionSquare,
+  Hash,
+  Sigma,
+  Grid3X3,
+  Triangle,
+  BarChart3,
   ArrowLeftRight,
-  BookOpen,
-  BookCopy,
-  ListChecks,
-  FileText,
+  TrendingUp,
+  MoveRight,
+  Shuffle,
   HelpCircle,
   type LucideProps,
 } from "lucide-react";
 import type { ComponentType } from "react";
 
 const map: Record<string, ComponentType<LucideProps>> = {
-  Scale,
+  Calculator,
+  FunctionSquare,
+  Hash,
+  Sigma,
+  Grid3X3,
+  Triangle,
+  BarChart3,
   ArrowLeftRight,
-  BookOpen,
-  BookCopy,
-  ListChecks,
-  FileText,
+  TrendingUp,
+  MoveRight,
+  Shuffle,
 };
 
-export function LessonIcon({
-  name,
-  ...props
-}: { name: string } & LucideProps) {
+export function TopicIcon({ name, ...props }: { name: string } & LucideProps) {
   const Cmp = map[name] ?? HelpCircle;
   return <Cmp {...props} />;
 }

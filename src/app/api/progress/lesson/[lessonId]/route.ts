@@ -3,25 +3,20 @@ import { db } from "@/lib/db";
 import { getCurrentStudentId } from "@/lib/auth";
 
 // PATCH /api/progress/lesson/:lessonId
-// Body: { status?, completionPct?, lastSectionIdx? }
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ lessonId: string }> }
-) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ lessonId: string }> }) {
   const { lessonId } = await params;
   const body = await req.json();
-  const { status, completionPct, lastSectionIdx } = body as {
+  const { status, completionPct, lastSectionIdx, topicId } = body as {
     status?: string;
     completionPct?: number;
     lastSectionIdx?: number;
+    topicId?: string;
   };
 
   const studentId = await getCurrentStudentId();
 
   const existing = await db.lessonProgress.findUnique({
-    where: {
-      studentId_lessonId: { studentId, lessonId },
-    },
+    where: { studentId_lessonId: { studentId, lessonId } },
   });
 
   if (!existing) {
@@ -29,6 +24,7 @@ export async function PATCH(
       data: {
         studentId,
         lessonId,
+        topicId: topicId ?? "",
         status: status ?? "in_progress",
         completionPct: completionPct ?? 0,
         lastSectionIdx: lastSectionIdx ?? 0,

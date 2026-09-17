@@ -2,88 +2,99 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentStudentId } from "@/lib/auth";
 
-// GET /api/dashboard
-// Returns aggregated progress + recent activity for the current student.
 export async function GET() {
   const studentId = await getCurrentStudentId();
 
-  const [student, lessons] = await Promise.all([
+  const [student, subjects, attempts] = await Promise.all([
     db.student.findUnique({ where: { id: studentId } }),
-    db.lesson.findMany({
+    db.subject.findMany({
       orderBy: { order: "asc" },
-      include: { _count: { select: { quizQuestions: true } } },
+      include: {
+        topics: {
+          orderBy: { order: "asc" },
+          include: { _count: { select: { quizQuestions: true } } },
+        },
+      },
+    }),
+    db.quizAttempt.findMany({
+      where: { studentId },
+      orderBy: { createdAt: "desc" },
+      take: 30,
+      include: { question: { include: { topic: { include: { subject: true } } } } },
     }),
   ]);
 
-  const progress = await db.lessonProgress.findMany({
-    where: { studentId },
-    include: { lesson: true },
-  });
-
-  const attempts = await db.quizAttempt.findMany({
-    where: { studentId },
-    orderBy: { createdAt: "desc" },
-    take: 30,
-    include: { question: { include: { lesson: true } } },
-  });
-
   const totalAttempts = attempts.length;
   const correctAttempts = attempts.filter((a) => a.isCorrect).length;
-  const totalPoints = attempts.reduce((sum, a) => sum + a.pointsEarned, 0);
+  const totalPoints = attempts.reduce((s, a) => s + a.pointsEarned, 0);
   const accuracy = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 0;
 
-  const completedLessons = progress.filter((p) => p.status === "completed").length;
-  const overallCompletion =
-    lessons.length > 0
-      ? Math.round(
-          progress.reduce((sum, p) => sum + p.completionPct, 0) / lessons.length
-        )
-      : 0;
+  // All topics flattened
+  const allTopics = subjects.flatMap((s) =>
+    s.topics.map((t) => ({
+      id: t.id,
+      slug: t.slug,
+      titleEn: t.titleEn,
+      titleMs: t.titleMs,
+      icon: t.icon,
+      subjectSlug: s.slug,
+      subjectNameEn: s.nameEn,
+      subjectNameMs: s.nameMs,
+      subjectColor: s.color,
+      quizCount: t._count.quizQuestions,
+    }))
+  );
 
-  // Skill mastery per lesson (avg correctness)
-  const byLesson = lessons.map((l) => {
-    const lessonAttempts = attempts.filter((a) => a.question.lessonId === l.id);
-    const lessonCorrect = lessonAttempts.filter((a) => a.isCorrect).length;
-    const lessonAccuracy =
-      lessonAttempts.length > 0
-        ? Math.round((lessonCorrect / lessonAttempts.length) * 100)
-        : 0;
-    const p = progress.find((pp) => pp.lessonId === l.id);
-    return {
-      id: l.id,
-      slug: l.slug,
-      titleEn: l.titleEn,
-      titleMs: l.titleMs,
-      icon: l.icon,
-      order: l.order,
-      status: p?.status ?? "not_started",
-      completionPct: p?.completionPct ?? 0,
-      quizCount: l._count.quizQuestions,
-      attempts: lessonAttempts.length,
-      accuracy: lessonAccuracy,
-    };
+  // Per-topic accuracy
+  const byTopic = allTopics.map((t) => {
+    const topicAttempts = attempts.filter((a) => a.question.topicId === t.id);
+    const topicCorrect = topicAttempts.filter((a) => a.isCorrect).length;
+    const topicAccuracy =
+      topicAttempts.length > 0 ? Math.round((topicCorrect / topicAttempts.length) * 100) : 0;
+    return { ...t, attempts: topicAttempts.length, accuracy: topicAccuracy };
   });
 
-  // Score trend (last 10 attempts in chronological order)
-  const scoreTrend = [...attempts]
-    .reverse()
-    .slice(-15)
-    .map((a, idx) => ({
+  // Score trend
+  let cumCorrect = 0;
+  const scoreTrend = [...attempts].reverse().slice(-15).map((a, idx) => {
+    cumCorrect += a.isCorrect ? 1 : 0;
+    return {
       idx: idx + 1,
       correct: a.isCorrect ? 1 : 0,
       points: a.pointsEarned,
-      lessonSlug: a.question.lesson?.slug ?? null,
+      rate: Math.round((cumCorrect / (idx + 1)) * 100),
+      topicSlug: a.question.topic?.slug ?? null,
+      subjectSlug: a.question.topic?.subject?.slug ?? null,
       difficulty: a.question.difficulty,
       at: a.createdAt.toISOString(),
-    }));
+    };
+  });
 
-  // Attempts by difficulty
+  // By difficulty
   const byDifficulty = ["beginner", "intermediate", "advanced"].map((d) => {
     const list = attempts.filter((a) => a.question.difficulty === d);
     return {
       difficulty: d,
       total: list.length,
       correct: list.filter((a) => a.isCorrect).length,
+    };
+  });
+
+  // By subject
+  const bySubject = subjects.map((s) => {
+    const subjectAttempts = attempts.filter((a) => a.question.topic?.subject?.slug === s.slug);
+    const subjectCorrect = subjectAttempts.filter((a) => a.isCorrect).length;
+    return {
+      slug: s.slug,
+      nameEn: s.nameEn,
+      nameMs: s.nameMs,
+      color: s.color,
+      attempts: subjectAttempts.length,
+      correct: subjectCorrect,
+      accuracy:
+        subjectAttempts.length > 0
+          ? Math.round((subjectCorrect / subjectAttempts.length) * 100)
+          : 0,
     };
   });
 
@@ -95,26 +106,27 @@ export async function GET() {
       isDemo: studentId === "student-demo",
     },
     stats: {
-      totalLessons: lessons.length,
-      completedLessons,
+      totalSubjects: subjects.length,
+      totalTopics: allTopics.length,
       totalAttempts,
       correctAttempts,
       totalPoints,
       accuracy,
-      overallCompletion,
     },
-    byLesson,
+    byTopic,
+    bySubject,
+    byDifficulty,
+    scoreTrend,
     recentAttempts: attempts.slice(0, 8).map((a) => ({
       id: a.id,
       isCorrect: a.isCorrect,
       pointsEarned: a.pointsEarned,
       difficulty: a.question.difficulty,
-      lessonSlug: a.question.lesson?.slug ?? null,
-      lessonTitleEn: a.question.lesson?.titleEn ?? null,
-      lessonTitleMs: a.question.lesson?.titleMs ?? null,
+      topicSlug: a.question.topic?.slug ?? null,
+      subjectSlug: a.question.topic?.subject?.slug ?? null,
+      topicTitleEn: a.question.topic?.titleEn ?? null,
+      topicTitleMs: a.question.topic?.titleMs ?? null,
       at: a.createdAt.toISOString(),
     })),
-    scoreTrend,
-    byDifficulty,
   });
 }

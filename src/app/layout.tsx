@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -15,19 +15,35 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LedgerLearn — Interactive Double-Entry Accounting",
+  title: "SPM Math Master — Interactive Mathematics for Form 4 & 5",
   description:
-    "Learn double-entry accounting interactively. Bilingual (Bahasa Malaysia & English) lessons, journal entry practice lab, and auto-graded quizzes for university students.",
+    "Bilingual (BM + English) SPM Mathematics app for Malaysian students. Covers Matematik and Matematik Tambahan with interactive solver, graph plotter, formula sheet, and past-year SPM questions.",
   keywords: [
-    "accounting",
-    "double entry",
-    "perakaunan",
-    "catatan berganda",
-    "journal entries",
-    "university",
+    "SPM",
+    "Mathematics",
+    "Matematik",
+    "Matematik Tambahan",
+    "Additional Mathematics",
+    "Form 4",
+    "Form 5",
     "Malaysia",
+    "KSSM",
   ],
+  manifest: "/manifest.json",
   icons: { icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg" },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "SPM Math",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#059669",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
 };
 
 export default function RootLayout({

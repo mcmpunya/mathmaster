@@ -3,19 +3,28 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useI18n } from "@/lib/i18n";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, XCircle, Trophy, RotateCcw, Play, ArrowRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  CheckCircle2,
+  XCircle,
+  Trophy,
+  RotateCcw,
+  Play,
+  ArrowRight,
+  Brain,
+} from "lucide-react";
 import { safeParse } from "@/lib/constants";
 import { MarkdownLite } from "./markdown-lite";
 
 type Question = {
   id: string;
-  type: string;
+  type: "mcq" | "numeric";
   promptEn: string;
   promptMs: string;
   optionsEn: string[];
@@ -25,7 +34,12 @@ type Question = {
   explanationMs: string;
   difficulty: string;
   points: number;
-  lesson?: { slug: string; titleEn: string; titleMs: string } | null;
+  topic: {
+    slug: string;
+    titleEn: string;
+    titleMs: string;
+    subject: { slug: string; nameEn: string; nameMs: string; color: string };
+  } | null;
 };
 
 type AttemptResult = {
@@ -46,16 +60,16 @@ export function QuizView() {
   const [history, setHistory] = useState<AttemptResult[]>([]);
   const [finished, setFinished] = useState(false);
 
-  const { data: questions = [], refetch, isFetching } = useQuery<Question[]>({
+  const { data: questions = [], isFetching } = useQuery<Question[]>({
     queryKey: ["quiz", "mixed"],
     enabled: started,
     queryFn: async () => {
       const r = await fetch("/api/quiz?count=10");
       const data = await r.json();
-      return data.map((q: Record<string, string>) => ({
+      return data.map((q: Record<string, unknown>) => ({
         ...q,
-        optionsEn: safeParse<string[]>(q.optionsEn, []),
-        optionsMs: safeParse<string[]>(q.optionsMs, []),
+        optionsEn: safeParse<string[]>((q.optionsEn as string) ?? "[]", []),
+        optionsMs: safeParse<string[]>((q.optionsMs as string) ?? "[]", []),
       }));
     },
   });
@@ -85,7 +99,6 @@ export function QuizView() {
     setSubmitted(null);
     setHistory([]);
     setFinished(false);
-    refetch();
   }
 
   function next() {
@@ -107,7 +120,6 @@ export function QuizView() {
     setCurrentIdx(0);
   }
 
-  // -------- Pre-start screen --------
   if (!started) {
     return (
       <div className="space-y-6">
@@ -115,7 +127,6 @@ export function QuizView() {
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("quiz.title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t("quiz.subtitle")}</p>
         </div>
-
         <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center gap-4 py-6 text-center">
@@ -128,8 +139,8 @@ export function QuizView() {
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {locale === "ms"
-                    ? "10 soalan dari semua modul. Markah serta-merta dengan penjelasan."
-                    : "10 questions drawn from all modules. Instant scoring with explanations."}
+                    ? "10 soalan dari semua topik. Markah serta-merta dengan penjelasan."
+                    : "10 questions from all topics. Instant scoring with explanations."}
                 </p>
               </div>
               <Button size="lg" onClick={start} className="gap-2">
@@ -138,26 +149,10 @@ export function QuizView() {
             </div>
           </CardContent>
         </Card>
-
-        <div className="grid gap-3 sm:grid-cols-3">
-          {[
-            { label: locale === "ms" ? "Bilangan Soalan" : "Questions", value: "10" },
-            { label: locale === "ms" ? "Tahap" : "Difficulty", value: "Mixed" },
-            { label: locale === "ms" ? "Mata Maksimum" : "Max Points", value: "24" },
-          ].map((s) => (
-            <Card key={s.label}>
-              <CardContent className="pt-6 text-center">
-                <div className="text-2xl font-bold text-primary">{s.value}</div>
-                <div className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">{s.label}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
       </div>
     );
   }
 
-  // -------- Loading --------
   if (isFetching || questions.length === 0) {
     return (
       <div className="grid h-64 place-items-center">
@@ -166,7 +161,6 @@ export function QuizView() {
     );
   }
 
-  // -------- Finished --------
   if (finished) {
     const correct = history.filter((h) => h.isCorrect).length;
     const total = questions.length;
@@ -196,7 +190,9 @@ export function QuizView() {
                 </div>
                 <div className="rounded-lg border border-border p-3">
                   <div className="text-2xl font-bold">{correct}/{total}</div>
-                  <div className="text-xs text-muted-foreground">{locale === "ms" ? "Betul" : "Correct"}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {locale === "ms" ? "Betul" : "Correct"}
+                  </div>
                 </div>
                 <div className="rounded-lg border border-border p-3">
                   <div className="text-2xl font-bold">{points}/{maxPoints}</div>
@@ -213,7 +209,6 @@ export function QuizView() {
     );
   }
 
-  // -------- Active question --------
   const options = locale === "ms" ? current.optionsMs : current.optionsEn;
   const prompt = locale === "ms" ? current.promptMs : current.promptEn;
   const explanation = submitted
@@ -226,12 +221,15 @@ export function QuizView() {
     <div className="space-y-6">
       <div>
         <div className="flex items-center justify-between gap-2">
-          <h1 className="text-xl font-bold sm:text-2xl">{t("quiz.title")}</h1>
+          <h1 className="flex items-center gap-2 text-xl font-bold sm:text-2xl">
+            <Brain className="h-5 w-5 text-primary" />
+            {t("quiz.title")}
+          </h1>
           <Badge variant="secondary">
             {t("quiz.question")} {currentIdx + 1} {t("quiz.of")} {questions.length}
           </Badge>
         </div>
-        <Progress value={((currentIdx) / questions.length) * 100} className="mt-3 h-1.5" />
+        <Progress value={(currentIdx / questions.length) * 100} className="mt-3 h-1.5" />
       </div>
 
       <Card>
@@ -241,11 +239,25 @@ export function QuizView() {
               {current.difficulty}
             </Badge>
             <Badge variant="outline">{current.points} {t("quiz.points")}</Badge>
-            <Badge variant="outline" className="capitalize">{current.type}</Badge>
-            {current.lesson && (
-              <Badge variant="outline">
-                {locale === "ms" ? current.lesson.titleMs : current.lesson.titleEn}
-              </Badge>
+            <Badge variant="outline" className="capitalize">
+              {current.type === "mcq" ? "MCQ" : "Numeric"}
+            </Badge>
+            {current.topic && (
+              <>
+                <Badge
+                  variant="outline"
+                  className={
+                    current.topic.subject.color === "emerald"
+                      ? "border-emerald-500/50 text-emerald-700 dark:text-emerald-400"
+                      : "border-amber-500/50 text-amber-700 dark:text-amber-400"
+                  }
+                >
+                  {locale === "ms" ? current.topic.subject.nameMs : current.topic.subject.nameEn}
+                </Badge>
+                <Badge variant="outline">
+                  {locale === "ms" ? current.topic.titleMs : current.topic.titleEn}
+                </Badge>
+              </>
             )}
           </div>
           <CardTitle className="mt-2 text-base leading-relaxed">
@@ -253,64 +265,109 @@ export function QuizView() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {!submitted && (
-            <RadioGroup
-              value={selected}
-              onValueChange={setSelected}
-              className="space-y-2"
-            >
-              {options.map((opt, i) => (
-                <Label
-                  key={i}
-                  htmlFor={`opt-${i}`}
-                  className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm transition-colors ${
-                    selected === String(i)
-                      ? "border-primary bg-primary/5"
-                      : "hover:border-primary/40 hover:bg-muted/40"
-                  }`}
-                >
-                  <RadioGroupItem value={String(i)} id={`opt-${i}`} className="mt-0.5" />
-                  <span className="flex-1">{opt}</span>
-                </Label>
-              ))}
-            </RadioGroup>
-          )}
-
-          {submitted && (
-            <div className="space-y-2">
-              {options.map((opt, i) => {
-                const isCorrect = String(i) === submitted.correctAnswer;
-                const isUserPick = String(i) === selected;
-                return (
-                  <div
+          {current.type === "mcq" ? (
+            !submitted ? (
+              <RadioGroup value={selected} onValueChange={setSelected} className="space-y-2">
+                {options.map((opt, i) => (
+                  <Label
                     key={i}
-                    className={`flex items-start gap-3 rounded-lg border p-3 text-sm ${
-                      isCorrect
-                        ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30"
-                        : isUserPick
-                        ? "border-destructive bg-destructive/5"
-                        : "border-border opacity-70"
+                    htmlFor={`opt-${i}`}
+                    className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm transition-colors ${
+                      selected === String(i)
+                        ? "border-primary bg-primary/5"
+                        : "hover:border-primary/40 hover:bg-muted/40"
                     }`}
                   >
-                    <div className="mt-0.5">
-                      {isCorrect ? (
-                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                      ) : isUserPick ? (
-                        <XCircle className="h-4 w-4 text-destructive" />
-                      ) : (
-                        <div className="h-4 w-4 rounded-full border border-border" />
-                      )}
-                    </div>
+                    <RadioGroupItem value={String(i)} id={`opt-${i}`} className="mt-0.5" />
                     <span className="flex-1">{opt}</span>
+                  </Label>
+                ))}
+              </RadioGroup>
+            ) : (
+              <div className="space-y-2">
+                {options.map((opt, i) => {
+                  const isCorrect = String(i) === submitted!.correctAnswer;
+                  const isUserPick = String(i) === selected;
+                  return (
+                    <div
+                      key={i}
+                      className={`flex items-start gap-3 rounded-lg border p-3 text-sm ${
+                        isCorrect
+                          ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30"
+                          : isUserPick
+                          ? "border-destructive bg-destructive/5"
+                          : "border-border opacity-70"
+                      }`}
+                    >
+                      <div className="mt-0.5">
+                        {isCorrect ? (
+                          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                        ) : isUserPick ? (
+                          <XCircle className="h-4 w-4 text-destructive" />
+                        ) : (
+                          <div className="h-4 w-4 rounded-full border border-border" />
+                        )}
+                      </div>
+                      <span className="flex-1">{opt}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )
+          ) : (
+            // Numeric answer
+            !submitted ? (
+              <div className="space-y-3">
+                <Label htmlFor="numeric-answer" className="text-sm">
+                  {t("quiz.enterAnswer")}
+                </Label>
+                <Input
+                  id="numeric-answer"
+                  type="text"
+                  value={selected}
+                  onChange={(e) => setSelected(e.target.value)}
+                  className="font-mono"
+                  placeholder="3 s.f."
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div
+                  className={`rounded-lg border p-3 text-sm ${
+                    submitted.isCorrect
+                      ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30"
+                      : "border-destructive bg-destructive/5"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {submitted.isCorrect ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-destructive" />
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                      {locale === "ms" ? "Jawapan anda: " : "Your answer: "}
+                    </span>
+                    <span className="font-mono font-semibold">{selected}</span>
+                    {!submitted.isCorrect && (
+                      <>
+                        <span className="text-xs text-muted-foreground mx-2">·</span>
+                        <span className="text-xs text-muted-foreground">
+                          {locale === "ms" ? "Betul: " : "Correct: "}
+                        </span>
+                        <span className="font-mono font-semibold text-emerald-700 dark:text-emerald-400">
+                          {submitted.correctAnswer}
+                        </span>
+                      </>
+                    )}
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              </div>
+            )
           )}
         </CardContent>
       </Card>
 
-      {/* Feedback card */}
       {submitted && (
         <Card
           className={`border-l-4 ${
@@ -343,7 +400,6 @@ export function QuizView() {
         </Card>
       )}
 
-      {/* Action bar */}
       <div className="flex justify-end">
         {!submitted ? (
           <Button
