@@ -2,6 +2,8 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { useEffect } from "react";
+import { useMounted } from "@/hooks/use-mounted";
 
 export type Locale = "en" | "ms";
 
@@ -181,7 +183,10 @@ interface I18nState {
   t: (key: string) => string;
 }
 
-export const useI18n = create<I18nState>()(
+// Internal store — persists to localStorage. We use `skipHydration` so
+// the store does NOT auto-rehydrate on the client before React hydrates.
+// Rehydration is triggered manually after mount (see `useI18n` below).
+const useI18nStore = create<I18nState>()(
   persist(
     (set, get) => ({
       locale: "en",
@@ -193,11 +198,50 @@ export const useI18n = create<I18nState>()(
         return entry[locale] ?? entry.en ?? key;
       },
     }),
-    { name: "ledgerlearn-locale" }
+    {
+      name: "ledgerlearn-locale",
+      skipHydration: true, // Critical: don't read localStorage during SSR/initial render
+    }
   )
 );
 
-// Server-safe dictionary accessor (no zustand) for non-component use
+/**
+ * Hydration-safe wrapper around the i18n store.
+ *
+ * - On the server: returns `locale: "en"` (the default)
+ * - On the first client render: also returns `locale: "en"` (matches server → no hydration mismatch)
+ * - After mount: triggers rehydration from localStorage and returns the persisted locale
+ *
+ * This means users who previously selected Malay will see English for one
+ * frame, then it flips to Malay. This is the standard trade-off for
+ * hydration safety with persisted state.
+ */
+export function useI18n(): I18nState {
+  const mounted = useMounted();
+  const store = useI18nStore();
+
+  // Rehydrate from localStorage after mount
+  useEffect(() => {
+    useI18nStore.persist.rehydrate();
+  }, []);
+
+  if (!mounted) {
+    // Pre-hydration: return default locale to match server render
+    return {
+      locale: "en",
+      setLocale: store.setLocale,
+      t: (key: string) => {
+        const entry = dict[key];
+        if (!entry) return key;
+        return entry.en ?? key;
+      },
+    };
+  }
+
+  return store;
+}
+
+// Server-safe dictionary accessor (for non-component use)
 export function translate(key: string, locale: Locale): string {
   const entry = dict[key];
   if (!entry) return key;
