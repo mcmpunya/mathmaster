@@ -61,8 +61,8 @@ export function SubjectsView({ onOpen }: { onOpen: (subjectSlug: string, topicSl
           <Card
             className={
               subject.color === "emerald"
-                ? "border-emerald-500/30 bg-gradient-to-br from-emerald-50/50 to-transparent dark:from-emerald-950/20"
-                : "border-amber-500/30 bg-gradient-to-br from-amber-50/50 to-transparent dark:from-amber-950/20"
+                ? "border-violet-500/30 bg-gradient-to-br from-violet-50/50 to-transparent dark:from-violet-950/20"
+                : "border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-50/50 to-transparent dark:from-fuchsia-950/20"
             }
           >
             <CardContent className="pt-6">
@@ -70,8 +70,8 @@ export function SubjectsView({ onOpen }: { onOpen: (subjectSlug: string, topicSl
                 <div
                   className={`grid h-12 w-12 place-items-center rounded-xl ${
                     subject.color === "emerald"
-                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-                      : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
+                      ? "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300"
+                      : "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/40 dark:text-fuchsia-300"
                   }`}
                 >
                   {subject.icon === "Calculator" ? (
@@ -99,7 +99,7 @@ export function SubjectsView({ onOpen }: { onOpen: (subjectSlug: string, topicSl
               <button
                 key={topic.id}
                 onClick={() => onOpen(subject.slug, topic.slug)}
-                className="focus-ring group rounded-lg border border-border p-4 text-left transition-all hover:border-primary/40 hover:shadow-md"
+                className="focus-ring group rounded-xl border border-border p-4 text-left transition-all hover:border-primary/40 hover:shadow-md"
               >
                 <div className="flex items-start gap-3">
                   <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">

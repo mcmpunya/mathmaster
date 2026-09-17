@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Moon, Sun, Languages, Calculator, LogIn, LogOut, UserRound } from "lucide-react";
+import { Moon, Sun, Languages, LogIn, LogOut, UserRound, Sigma } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import {
@@ -40,8 +40,8 @@ export function Header() {
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-3 sm:px-6 sm:h-16">
         <div className="flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-emerald-700 text-primary-foreground shadow-sm sm:h-10 sm:w-10">
-            <Calculator className="h-4 w-4 sm:h-5 sm:w-5" />
+          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-violet-700 text-primary-foreground shadow-sm sm:h-10 sm:w-10">
+            <Sigma className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
           <div className="leading-tight">
             <div className="text-sm font-bold tracking-tight sm:text-base">

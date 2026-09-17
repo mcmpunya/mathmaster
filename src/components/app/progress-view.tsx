@@ -94,9 +94,9 @@ export function ProgressView({ onOpenTopic }: { onOpenTopic: (subjectSlug: strin
       {/* Top stats */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={Award} label={t("progress.totalPoints")} value={String(stats.totalPoints)} tone="amber" />
-        <StatCard icon={Target} label={t("progress.accuracy")} value={`${stats.accuracy}%`} tone="emerald" />
-        <StatCard icon={TrendingUp} label={t("progress.attempts")} value={String(stats.totalAttempts)} tone="primary" />
-        <StatCard icon={Trophy} label={t("home.stat.topics")} value={`${stats.totalTopics}`} tone="rose" />
+        <StatCard icon={Target} label={t("progress.accuracy")} value={`${stats.accuracy}%`} tone="violet" />
+        <StatCard icon={TrendingUp} label={t("progress.attempts")} value={String(stats.totalAttempts)} tone="fuchsia" />
+        <StatCard icon={Trophy} label={t("home.stat.topics")} value={`${stats.totalTopics}`} tone="teal" />
       </div>
 
       {/* By subject */}
@@ -116,8 +116,8 @@ export function ProgressView({ onOpenTopic }: { onOpenTopic: (subjectSlug: strin
                     variant="outline"
                     className={
                       s.color === "emerald"
-                        ? "border-emerald-500/50 text-emerald-700 dark:text-emerald-400"
-                        : "border-amber-500/50 text-amber-700 dark:text-amber-400"
+                        ? "border-violet-500/50 text-violet-700 dark:text-violet-400"
+                        : "border-fuchsia-500/50 text-fuchsia-700 dark:text-fuchsia-400"
                     }
                   >
                     {s.accuracy}%
@@ -288,12 +288,12 @@ export function ProgressView({ onOpenTopic }: { onOpenTopic: (subjectSlug: strin
   );
 }
 
-function StatCard({ icon: Icon, label, value, tone }: { icon: typeof Award; label: string; value: string; tone: "primary" | "emerald" | "amber" | "rose" }) {
+function StatCard({ icon: Icon, label, value, tone }: { icon: typeof Award; label: string; value: string; tone: "violet" | "fuchsia" | "amber" | "teal" }) {
   const tones = {
-    primary: "bg-primary/10 text-primary",
-    emerald: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+    violet: "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300",
+    fuchsia: "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/40 dark:text-fuchsia-300",
     amber: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-    rose: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
+    teal: "bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300",
   };
   return (
     <Card>

@@ -248,8 +248,8 @@ export function QuizView() {
                   variant="outline"
                   className={
                     current.topic.subject.color === "emerald"
-                      ? "border-emerald-500/50 text-emerald-700 dark:text-emerald-400"
-                      : "border-amber-500/50 text-amber-700 dark:text-amber-400"
+                      ? "border-violet-500/50 text-violet-700 dark:text-violet-400"
+                      : "border-fuchsia-500/50 text-fuchsia-700 dark:text-fuchsia-400"
                   }
                 >
                   {locale === "ms" ? current.topic.subject.nameMs : current.topic.subject.nameEn}

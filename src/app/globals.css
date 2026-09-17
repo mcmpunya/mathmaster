@@ -44,73 +44,73 @@
 }
 
 :root {
-  --radius: 0.75rem;
-  /* Light theme — warm cream paper with emerald primary (accounting/finance feel) */
-  --background: oklch(0.985 0.008 145);
-  --foreground: oklch(0.20 0.02 160);
+  --radius: 1rem;
+  /* Light theme — cool paper with violet primary (math/academic feel) */
+  --background: oklch(0.985 0.006 280);
+  --foreground: oklch(0.18 0.02 280);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.20 0.02 160);
+  --card-foreground: oklch(0.18 0.02 280);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.20 0.02 160);
-  --primary: oklch(0.45 0.13 162);          /* emerald-700 */
+  --popover-foreground: oklch(0.18 0.02 280);
+  --primary: oklch(0.48 0.20 285);           /* violet-600 */
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.95 0.02 150);
-  --secondary-foreground: oklch(0.30 0.05 162);
-  --muted: oklch(0.96 0.01 145);
-  --muted-foreground: oklch(0.50 0.02 160);
-  --accent: oklch(0.92 0.05 165);
-  --accent-foreground: oklch(0.30 0.08 162);
+  --secondary: oklch(0.95 0.015 280);
+  --secondary-foreground: oklch(0.30 0.06 285);
+  --muted: oklch(0.96 0.008 280);
+  --muted-foreground: oklch(0.48 0.02 280);
+  --accent: oklch(0.93 0.04 285);
+  --accent-foreground: oklch(0.30 0.08 285);
   --destructive: oklch(0.58 0.22 25);
-  --border: oklch(0.88 0.02 150);
-  --input: oklch(0.92 0.02 150);
-  --ring: oklch(0.55 0.12 162);
-  --chart-1: oklch(0.55 0.13 162);  /* emerald */
-  --chart-2: oklch(0.65 0.15 70);   /* amber */
-  --chart-3: oklch(0.55 0.20 25);   /* red */
-  --chart-4: oklch(0.55 0.10 240);  /* slate */
-  --chart-5: oklch(0.70 0.15 300);  /* magenta */
-  --sidebar: oklch(0.97 0.01 150);
-  --sidebar-foreground: oklch(0.20 0.02 160);
-  --sidebar-primary: oklch(0.45 0.13 162);
+  --border: oklch(0.88 0.015 280);
+  --input: oklch(0.92 0.015 280);
+  --ring: oklch(0.50 0.18 285);
+  --chart-1: oklch(0.55 0.20 285);   /* violet */
+  --chart-2: oklch(0.65 0.18 330);   /* fuchsia/pink */
+  --chart-3: oklch(0.65 0.15 70);    /* amber */
+  --chart-4: oklch(0.60 0.13 180);   /* teal */
+  --chart-5: oklch(0.60 0.20 10);    /* red-orange */
+  --sidebar: oklch(0.97 0.008 280);
+  --sidebar-foreground: oklch(0.18 0.02 280);
+  --sidebar-primary: oklch(0.48 0.20 285);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.92 0.05 165);
-  --sidebar-accent-foreground: oklch(0.30 0.08 162);
-  --sidebar-border: oklch(0.88 0.02 150);
-  --sidebar-ring: oklch(0.55 0.12 162);
+  --sidebar-accent: oklch(0.93 0.04 285);
+  --sidebar-accent-foreground: oklch(0.30 0.08 285);
+  --sidebar-border: oklch(0.88 0.015 280);
+  --sidebar-ring: oklch(0.50 0.18 285);
 }
 
 .dark {
-  --background: oklch(0.16 0.01 165);
-  --foreground: oklch(0.97 0.01 150);
-  --card: oklch(0.22 0.02 165);
-  --card-foreground: oklch(0.97 0.01 150);
-  --popover: oklch(0.22 0.02 165);
-  --popover-foreground: oklch(0.97 0.01 150);
-  --primary: oklch(0.70 0.15 162);
-  --primary-foreground: oklch(0.16 0.02 165);
-  --secondary: oklch(0.28 0.02 165);
-  --secondary-foreground: oklch(0.97 0.01 150);
-  --muted: oklch(0.26 0.02 165);
-  --muted-foreground: oklch(0.72 0.02 150);
-  --accent: oklch(0.30 0.04 162);
-  --accent-foreground: oklch(0.95 0.02 150);
+  --background: oklch(0.15 0.015 280);
+  --foreground: oklch(0.97 0.008 280);
+  --card: oklch(0.21 0.025 280);
+  --card-foreground: oklch(0.97 0.008 280);
+  --popover: oklch(0.21 0.025 280);
+  --popover-foreground: oklch(0.97 0.008 280);
+  --primary: oklch(0.70 0.18 285);
+  --primary-foreground: oklch(0.15 0.015 280);
+  --secondary: oklch(0.27 0.025 280);
+  --secondary-foreground: oklch(0.97 0.008 280);
+  --muted: oklch(0.25 0.025 280);
+  --muted-foreground: oklch(0.70 0.02 280);
+  --accent: oklch(0.29 0.05 285);
+  --accent-foreground: oklch(0.95 0.02 280);
   --destructive: oklch(0.70 0.20 25);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.55 0.12 162);
-  --chart-1: oklch(0.70 0.15 162);
-  --chart-2: oklch(0.75 0.15 70);
-  --chart-3: oklch(0.70 0.20 25);
-  --chart-4: oklch(0.65 0.10 240);
-  --chart-5: oklch(0.75 0.15 300);
-  --sidebar: oklch(0.20 0.02 165);
-  --sidebar-foreground: oklch(0.97 0.01 150);
-  --sidebar-primary: oklch(0.70 0.15 162);
-  --sidebar-primary-foreground: oklch(0.16 0.02 165);
-  --sidebar-accent: oklch(0.30 0.04 162);
-  --sidebar-accent-foreground: oklch(0.95 0.02 150);
+  --ring: oklch(0.50 0.18 285);
+  --chart-1: oklch(0.70 0.18 285);
+  --chart-2: oklch(0.75 0.18 330);
+  --chart-3: oklch(0.75 0.15 70);
+  --chart-4: oklch(0.70 0.13 180);
+  --chart-5: oklch(0.70 0.20 10);
+  --sidebar: oklch(0.19 0.025 280);
+  --sidebar-foreground: oklch(0.97 0.008 280);
+  --sidebar-primary: oklch(0.70 0.18 285);
+  --sidebar-primary-foreground: oklch(0.15 0.015 280);
+  --sidebar-accent: oklch(0.29 0.05 285);
+  --sidebar-accent-foreground: oklch(0.95 0.02 280);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.55 0.12 162);
+  --sidebar-ring: oklch(0.50 0.18 285);
 }
 
 @layer base {
@@ -119,7 +119,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "ss01", "cv11";
+    font-feature-settings: "ss01", "cv11", "tnum";
   }
 }
 
@@ -129,16 +129,39 @@
 .scroll-area-thin::-webkit-scrollbar-thumb { background: var(--muted-foreground); border-radius: 9999px; opacity: 0.4; }
 .scroll-area-thin::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
-/* Subtle ledger grid background for hero */
-.ledger-grid {
+/* Graph paper background for hero — looks like actual math grid paper
+   with major lines every 5 units and minor lines every 1 unit */
+.graph-paper {
   background-image:
-    linear-gradient(to right, oklch(0.88 0.02 150 / 0.5) 1px, transparent 1px),
-    linear-gradient(to bottom, oklch(0.88 0.02 150 / 0.3) 1px, transparent 1px);
-  background-size: 32px 32px;
+    /* Major lines (every 40px = 5 units) */
+    linear-gradient(to right, oklch(0.60 0.10 285 / 0.15) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.60 0.10 285 / 0.15) 1px, transparent 1px),
+    /* Minor lines (every 8px = 1 unit) */
+    linear-gradient(to right, oklch(0.60 0.10 285 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.60 0.10 285 / 0.06) 1px, transparent 1px);
+  background-size: 40px 40px, 40px 40px, 8px 8px, 8px 8px;
+}
+
+/* Dark mode graph paper */
+.dark .graph-paper {
+  background-image:
+    linear-gradient(to right, oklch(0.70 0.15 285 / 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.70 0.15 285 / 0.12) 1px, transparent 1px),
+    linear-gradient(to right, oklch(0.70 0.15 285 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.70 0.15 285 / 0.05) 1px, transparent 1px);
+  background-size: 40px 40px, 40px 40px, 8px 8px, 8px 8px;
 }
 
 /* Smooth focus ring on interactive cards */
 .focus-ring:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+}
+
+/* Math-themed decorative gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary), oklch(0.60 0.18 330));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

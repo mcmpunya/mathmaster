@@ -81,7 +81,7 @@ export function HomeView({
     <div className="space-y-6">
       {/* Hero */}
       <Card className="relative overflow-hidden border-primary/30">
-        <div className="absolute inset-0 ledger-grid opacity-20" />
+        <div className="absolute inset-0 graph-paper opacity-40" />
         <CardContent className="relative pt-6">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="max-w-2xl">
@@ -90,7 +90,7 @@ export function HomeView({
                 {locale === "ms" ? "Tingkatan 4 & 5" : "Form 4 & 5"}
               </Badge>
               <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">
-                {t("home.welcome")} <span className="text-primary">{t("app.title")}</span>
+                {t("home.welcome")} <span className="gradient-text">{t("app.title")}</span>
               </h1>
               <p className="mt-2 text-sm text-muted-foreground sm:text-base">{t("app.tagline")}</p>
               <div className="mt-4 flex flex-wrap gap-2">
@@ -108,12 +108,12 @@ export function HomeView({
             </div>
 
             <div className="grid shrink-0 grid-cols-2 gap-3">
-              <StatTile icon={BookOpen} label={t("home.stat.subjects")} value={String(subjects.length)} tone="primary" />
+              <StatTile icon={BookOpen} label={t("home.stat.subjects")} value={String(subjects.length)} tone="violet" />
               <StatTile
                 icon={Award}
                 label={t("home.stat.topics")}
                 value={String(subjects.reduce((s, sub) => s + sub.topics.length, 0))}
-                tone="emerald"
+                tone="fuchsia"
               />
               <StatTile
                 icon={Target}
@@ -125,7 +125,7 @@ export function HomeView({
                 icon={Brain}
                 label={t("home.stat.attempts")}
                 value={String(dash?.stats.totalAttempts ?? 0)}
-                tone="rose"
+                tone="teal"
               />
             </div>
           </div>
@@ -139,8 +139,8 @@ export function HomeView({
             <div
               className={`grid h-10 w-10 place-items-center rounded-xl ${
                 subject.color === "emerald"
-                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-                  : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
+                  ? "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300"
+                  : "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/40 dark:text-fuchsia-300"
               }`}
             >
               {subject.icon === "Calculator" ? (
@@ -164,7 +164,7 @@ export function HomeView({
               <button
                 key={topic.id}
                 onClick={() => onOpenTopic(subject.slug, topic.slug)}
-                className="focus-ring group rounded-lg border border-border p-4 text-left transition-all hover:border-primary/40 hover:shadow-md"
+                className="focus-ring group rounded-xl border border-border p-4 text-left transition-all hover:border-primary/40 hover:shadow-md"
               >
                 <div className="flex items-start gap-3">
                   <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
@@ -250,16 +250,16 @@ function StatTile({
   icon: typeof Award;
   label: string;
   value: string;
-  tone: "primary" | "emerald" | "amber" | "rose";
+  tone: "violet" | "fuchsia" | "amber" | "teal";
 }) {
   const tones = {
-    primary: "bg-primary/10 text-primary",
-    emerald: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+    violet: "bg-primary/10 text-primary",
+    fuchsia: "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/40 dark:text-fuchsia-300",
     amber: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-    rose: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
+    teal: "bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300",
   };
   return (
-    <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-3">
+    <div className="flex items-center gap-2 rounded-xl border border-border bg-card p-3 shadow-sm">
       <div className={`grid h-9 w-9 place-items-center rounded-lg ${tones[tone]}`}>
         <Icon className="h-4 w-4" />
       </div>
