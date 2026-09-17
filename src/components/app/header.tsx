@@ -54,7 +54,7 @@ export function Header() {
             </div>
           </div>
           <Badge variant="secondary" className="ml-2 hidden md:inline-flex">
-            v1.1
+            v1.2
           </Badge>
         </div>
 
