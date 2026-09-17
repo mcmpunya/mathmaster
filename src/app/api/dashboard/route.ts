@@ -3,26 +3,27 @@ import { db } from "@/lib/db";
 import { getCurrentStudentId } from "@/lib/auth";
 
 export async function GET() {
-  const studentId = await getCurrentStudentId();
+  try {
+    const studentId = await getCurrentStudentId();
 
-  const [student, subjects, attempts] = await Promise.all([
-    db.student.findUnique({ where: { id: studentId } }),
-    db.subject.findMany({
-      orderBy: { order: "asc" },
-      include: {
-        topics: {
-          orderBy: { order: "asc" },
-          include: { _count: { select: { quizQuestions: true } } },
+    const [student, subjects, attempts] = await Promise.all([
+      db.student.findUnique({ where: { id: studentId } }),
+      db.subject.findMany({
+        orderBy: { order: "asc" },
+        include: {
+          topics: {
+            orderBy: { order: "asc" },
+            include: { _count: { select: { quizQuestions: true } } },
+          },
         },
-      },
-    }),
-    db.quizAttempt.findMany({
-      where: { studentId },
-      orderBy: { createdAt: "desc" },
-      take: 30,
-      include: { question: { include: { topic: { include: { subject: true } } } } },
-    }),
-  ]);
+      }),
+      db.quizAttempt.findMany({
+        where: { studentId },
+        orderBy: { createdAt: "desc" },
+        take: 30,
+        include: { question: { include: { topic: { include: { subject: true } } } } },
+      }),
+    ]);
 
   const totalAttempts = attempts.length;
   const correctAttempts = attempts.filter((a) => a.isCorrect).length;
@@ -129,4 +130,18 @@ export async function GET() {
       at: a.createdAt.toISOString(),
     })),
   });
+  } catch (err) {
+    console.error("[/api/dashboard] Error:", err);
+    return NextResponse.json(
+      {
+        error: "Dashboard fetch failed",
+        detail: String(err),
+        hint:
+          "If you see 'Cannot read properties of undefined (reading findMany)', " +
+          "Prisma Client was not generated. Make sure postinstall runs 'prisma generate'. " +
+          "If you see a connection error, check DATABASE_URL.",
+      },
+      { status: 500 }
+    );
+  }
 }
