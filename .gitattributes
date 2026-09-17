@@ -1,0 +1,33 @@
+# Auto-detect text files and normalize line endings to LF on commit,
+# but let Git convert to CRLF on Windows checkout (core.autocrlf=true).
+# This silences the "LF will be replaced by CRLF" warnings.
+
+* text=auto eol=lf
+
+# Specific file types — always LF in repo, native on checkout
+*.ts     text eol=lf
+*.tsx    text eol=lf
+*.js     text eol=lf
+*.jsx    text eol=lf
+*.json   text eol=lf
+*.css    text eol=lf
+*.md     text eol=lf
+*.yaml   text eol=lf
+*.yml    text eol=lf
+*.sh     text eol=lf
+
+# Lockfiles — must be LF always (some tools break on CRLF)
+bun.lock         binary
+package-lock.json binary
+yarn.lock        binary
+pnpm-lock.yaml   binary
+
+# Binary files — never touch
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.svg  text eol=lf
+*.pdf  binary
+*.node binary
